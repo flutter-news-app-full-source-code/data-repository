@@ -462,9 +462,7 @@ void main() {
 
         // Assert
         expect(result, 10);
-        verify(
-          () => mockDataClient.count(filter: mockQuery),
-        ).called(1);
+        verify(() => mockDataClient.count(filter: mockQuery)).called(1);
       });
 
       test('should rethrow HttpException when client.count throws', () async {
@@ -514,9 +512,7 @@ void main() {
           // Assert
           expect(result, mockAggregateResult);
           verify(
-            () => mockDataClient.aggregate(
-              pipeline: mockAggregatePipeline,
-            ),
+            () => mockDataClient.aggregate(pipeline: mockAggregatePipeline),
           ).called(1);
         },
       );
