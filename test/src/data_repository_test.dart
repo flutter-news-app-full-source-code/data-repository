@@ -1,9 +1,9 @@
 //
 // ignore_for_file: lines_longer_than_80_chars, avoid_equals_and_hash_code_on_mutable_classes
 
-import 'package:ht_data_client/ht_data_client.dart';
-import 'package:ht_data_repository/ht_data_repository.dart';
-import 'package:ht_shared/ht_shared.dart';
+import 'package:core/core.dart';
+import 'package:data_client/data_client.dart';
+import 'package:data_repository/data_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -29,13 +29,13 @@ class _MockData {
   String toString() => '_MockData(id: $id, value: $value)';
 }
 
-// Mock the HtDataClient using mocktail
-class MockHtDataClient extends Mock implements HtDataClient<_MockData> {}
+// Mock the DataClient using mocktail
+class MockDataClient extends Mock implements DataClient<_MockData> {}
 
 void main() {
-  group('HtDataRepository', () {
-    late HtDataClient<_MockData> mockDataClient;
-    late HtDataRepository<_MockData> repository;
+  group('DataRepository', () {
+    late DataClient<_MockData> mockDataClient;
+    late DataRepository<_MockData> repository;
 
     // Dummy data instances for testing
     const mockId = 'test-id-123';
@@ -88,7 +88,7 @@ void main() {
     const mockHttpException = NotFoundException('Item not found');
     const mockFormatException = FormatException('Invalid data format');
     const mockSortBy = 'name';
-    const mockSortOrder = SortOrder.asc;
+    // const mockSortOrder = SortOrder.asc;
 
     setUp(() {
       // Register fallback values for any() matchers if needed
@@ -100,8 +100,8 @@ void main() {
       registerFallbackValue(<SortOption>[]);
       registerFallbackValue(<Map<String, dynamic>>[]);
 
-      mockDataClient = MockHtDataClient();
-      repository = HtDataRepository<_MockData>(dataClient: mockDataClient);
+      mockDataClient = MockDataClient();
+      repository = DataRepository<_MockData>(dataClient: mockDataClient);
     });
 
     // --- Test Cases ---
@@ -128,27 +128,24 @@ void main() {
         ).called(1);
       });
 
-      test(
-        'should rethrow HtHttpException when client.create throws',
-        () async {
-          // Arrange
-          when(
-            () => mockDataClient.create(
-              item: any(named: 'item'),
-              userId: any(named: 'userId'),
-            ),
-          ).thenThrow(mockHttpException);
+      test('should rethrow HttpException when client.create throws', () async {
+        // Arrange
+        when(
+          () => mockDataClient.create(
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
 
-          // Act & Assert
-          expect(
-            () => repository.create(item: mockItem),
-            throwsA(isA<HtHttpException>()),
-          );
-          verify(
-            () => mockDataClient.create(item: mockItem, userId: null),
-          ).called(1);
-        },
-      );
+        // Act & Assert
+        expect(
+          () => repository.create(item: mockItem),
+          throwsA(isA<HttpException>()),
+        );
+        verify(
+          () => mockDataClient.create(item: mockItem, userId: null),
+        ).called(1);
+      });
 
       test(
         'should rethrow FormatException when client.create throws',
@@ -193,7 +190,7 @@ void main() {
         verify(() => mockDataClient.read(id: mockId, userId: null)).called(1);
       });
 
-      test('should rethrow HtHttpException when client.read throws', () async {
+      test('should rethrow HttpException when client.read throws', () async {
         // Arrange
         when(
           () => mockDataClient.read(
@@ -205,7 +202,7 @@ void main() {
         // Act & Assert
         expect(
           () => repository.read(id: mockId),
-          throwsA(isA<HtHttpException>()),
+          throwsA(isA<HttpException>()),
         );
         verify(() => mockDataClient.read(id: mockId, userId: null)).called(1);
       });
@@ -243,11 +240,11 @@ void main() {
           ).thenAnswer((_) async => mockSuccessResponseList);
 
           // Act
-          final paginationOptions = const PaginationOptions(
+          const paginationOptions = PaginationOptions(
             cursor: 'lastId',
             limit: 10,
           );
-          final sortOptions = [const SortOption(mockSortBy, mockSortOrder)];
+          final sortOptions = [const SortOption(mockSortBy)];
           final result = await repository.readAll(
             pagination: paginationOptions,
             sort: sortOptions,
@@ -294,31 +291,28 @@ void main() {
         ).called(1);
       });
 
-      test(
-        'should rethrow HtHttpException when client.readAll throws',
-        () async {
-          // Arrange
-          when(
-            () => mockDataClient.readAll(
-              userId: any(named: 'userId'),
-              filter: any(named: 'filter'),
-              pagination: any(named: 'pagination'),
-              sort: any(named: 'sort'),
-            ),
-          ).thenThrow(mockHttpException);
+      test('should rethrow HttpException when client.readAll throws', () async {
+        // Arrange
+        when(
+          () => mockDataClient.readAll(
+            userId: any(named: 'userId'),
+            filter: any(named: 'filter'),
+            pagination: any(named: 'pagination'),
+            sort: any(named: 'sort'),
+          ),
+        ).thenThrow(mockHttpException);
 
-          // Act & Assert
-          expect(() => repository.readAll(), throwsA(isA<HtHttpException>()));
-          verify(
-            () => mockDataClient.readAll(
-              userId: null,
-              filter: null,
-              pagination: null,
-              sort: null,
-            ),
-          ).called(1);
-        },
-      );
+        // Act & Assert
+        expect(() => repository.readAll(), throwsA(isA<HttpException>()));
+        verify(
+          () => mockDataClient.readAll(
+            userId: null,
+            filter: null,
+            pagination: null,
+            sort: null,
+          ),
+        ).called(1);
+      });
 
       test(
         'should rethrow FormatException when client.readAll throws',
@@ -370,29 +364,25 @@ void main() {
         ).called(1);
       });
 
-      test(
-        'should rethrow HtHttpException when client.update throws',
-        () async {
-          // Arrange
-          when(
-            () => mockDataClient.update(
-              id: any(named: 'id'),
-              item: any(named: 'item'),
-              userId: any(named: 'userId'),
-            ),
-          ).thenThrow(mockHttpException);
+      test('should rethrow HttpException when client.update throws', () async {
+        // Arrange
+        when(
+          () => mockDataClient.update(
+            id: any(named: 'id'),
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
 
-          // Act & Assert
-          expect(
-            () => repository.update(id: mockId, item: mockItem),
-            throwsA(isA<HtHttpException>()),
-          );
-          verify(
-            () =>
-                mockDataClient.update(id: mockId, item: mockItem, userId: null),
-          ).called(1);
-        },
-      );
+        // Act & Assert
+        expect(
+          () => repository.update(id: mockId, item: mockItem),
+          throwsA(isA<HttpException>()),
+        );
+        verify(
+          () => mockDataClient.update(id: mockId, item: mockItem, userId: null),
+        ).called(1);
+      });
 
       test(
         'should rethrow FormatException when client.update throws',
@@ -436,25 +426,22 @@ void main() {
         verify(() => mockDataClient.delete(id: mockId)).called(1);
       });
 
-      test(
-        'should rethrow HtHttpException when client.delete throws',
-        () async {
-          // Arrange
-          when(
-            () => mockDataClient.delete(
-              id: any(named: 'id'),
-              userId: any(named: 'userId'),
-            ),
-          ).thenThrow(mockHttpException);
+      test('should rethrow HttpException when client.delete throws', () async {
+        // Arrange
+        when(
+          () => mockDataClient.delete(
+            id: any(named: 'id'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
 
-          // Act & Assert
-          expect(
-            () => repository.delete(id: mockId),
-            throwsA(isA<HtHttpException>()),
-          );
-          verify(() => mockDataClient.delete(id: mockId)).called(1);
-        },
-      );
+        // Act & Assert
+        expect(
+          () => repository.delete(id: mockId),
+          throwsA(isA<HttpException>()),
+        );
+        verify(() => mockDataClient.delete(id: mockId)).called(1);
+      });
 
       // Note: delete typically doesn't involve FormatException unless the client
       // implementation has unusual behavior, so we omit that test case here.
@@ -476,11 +463,11 @@ void main() {
         // Assert
         expect(result, 10);
         verify(
-          () => mockDataClient.count(userId: null, filter: mockQuery),
+          () => mockDataClient.count(filter: mockQuery),
         ).called(1);
       });
 
-      test('should rethrow HtHttpException when client.count throws', () async {
+      test('should rethrow HttpException when client.count throws', () async {
         // Arrange
         when(
           () => mockDataClient.count(
@@ -490,7 +477,7 @@ void main() {
         ).thenThrow(mockHttpException);
 
         // Act & Assert
-        expect(() => repository.count(), throwsA(isA<HtHttpException>()));
+        expect(() => repository.count(), throwsA(isA<HttpException>()));
       });
 
       test('should rethrow FormatException when client.count throws', () async {
@@ -529,14 +516,13 @@ void main() {
           verify(
             () => mockDataClient.aggregate(
               pipeline: mockAggregatePipeline,
-              userId: null,
             ),
           ).called(1);
         },
       );
 
       test(
-        'should rethrow HtHttpException when client.aggregate throws',
+        'should rethrow HttpException when client.aggregate throws',
         () async {
           // Arrange
           when(
@@ -549,7 +535,7 @@ void main() {
           // Act & Assert
           expect(
             () => repository.aggregate(pipeline: mockAggregatePipeline),
-            throwsA(isA<HtHttpException>()),
+            throwsA(isA<HttpException>()),
           );
         },
       );

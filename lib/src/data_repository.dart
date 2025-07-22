@@ -1,43 +1,43 @@
 //
 // ignore_for_file: lines_longer_than_80_chars
 
-import 'package:ht_data_client/ht_data_client.dart';
-import 'package:ht_shared/ht_shared.dart';
+import 'package:core/core.dart';
+import 'package:data_client/data_client.dart';
 
-/// {@template ht_data_repository}
-/// A generic repository that acts as an abstraction layer over an [HtDataClient].
+/// {@template data_repository}
+/// A generic repository that acts as an abstraction layer over an [DataClient].
 ///
-/// It mirrors the data access methods provided by the [HtDataClient] interface
+/// It mirrors the data access methods provided by the [DataClient] interface
 /// (CRUD operations, querying) for a specific data type [T].
 ///
-/// This repository requires an instance of [HtDataClient<T>] to be injected
+/// This repository requires an instance of [DataClient<T>] to be injected
 /// via its constructor. It delegates all data operations to the underlying client.
 ///
 /// Error Handling:
-/// The repository catches exceptions thrown by the injected [HtDataClient]
-/// (typically subtypes of [HtHttpException] from the network layer, or
+/// The repository catches exceptions thrown by the injected [DataClient]
+/// (typically subtypes of [HttpException] from the network layer, or
 /// potentially [FormatException] during deserialization) and re-throws them.
 /// This allows higher layers (like BLoCs or API route handlers) to implement
 /// specific error handling logic based on the exception type.
 /// {@endtemplate}
-class HtDataRepository<T> {
-  /// {@macro ht_data_repository}
-  const HtDataRepository({required HtDataClient<T> dataClient})
+class DataRepository<T> {
+  /// {@macro data_repository}
+  const DataRepository({required DataClient<T> dataClient})
     : _dataClient = dataClient;
 
-  final HtDataClient<T> _dataClient;
+  final DataClient<T> _dataClient;
 
   /// Creates a new resource item of type [T] by delegating to the client.
   ///
   /// Unwraps the [SuccessApiResponse] from the client and returns the
   /// created item of type [T].
   ///
-  /// Re-throws any [HtHttpException] or [FormatException] from the client.
+  /// Re-throws any [HttpException] or [FormatException] from the client.
   Future<T> create({required T item, String? userId}) async {
     try {
       final response = await _dataClient.create(item: item, userId: userId);
       return response.data;
-    } on HtHttpException {
+    } on HttpException {
       rethrow; // Propagate client-level HTTP exceptions
     } on FormatException {
       rethrow; // Propagate serialization/deserialization errors
@@ -51,13 +51,13 @@ class HtDataRepository<T> {
   /// Unwraps the [SuccessApiResponse] from the client and returns the
   /// deserialized item of type [T].
   ///
-  /// Re-throws any [HtHttpException] (like [NotFoundException]) or
+  /// Re-throws any [HttpException] (like [NotFoundException]) or
   /// [FormatException] from the client.
   Future<T> read({required String id, String? userId}) async {
     try {
       final response = await _dataClient.read(id: id, userId: userId);
       return response.data;
-    } on HtHttpException {
+    } on HttpException {
       rethrow;
     } on FormatException {
       rethrow;
@@ -71,7 +71,7 @@ class HtDataRepository<T> {
   /// [PaginatedResponse] containing the list of deserialized items and
   /// pagination details.
   ///
-  /// Re-throws any [HtHttpException] or [FormatException] from the client.
+  /// Re-throws any [HttpException] or [FormatException] from the client.
   Future<PaginatedResponse<T>> readAll({
     String? userId,
     Map<String, dynamic>? filter,
@@ -86,7 +86,7 @@ class HtDataRepository<T> {
         sort: sort,
       );
       return response.data;
-    } on HtHttpException {
+    } on HttpException {
       rethrow;
     } on FormatException {
       rethrow;
@@ -98,7 +98,7 @@ class HtDataRepository<T> {
   /// Unwraps the [SuccessApiResponse] from the client and returns the
   /// updated item of type [T].
   ///
-  /// Re-throws any [HtHttpException] (like [NotFoundException]) or
+  /// Re-throws any [HttpException] (like [NotFoundException]) or
   /// [FormatException] from the client.
   Future<T> update({
     required String id,
@@ -112,7 +112,7 @@ class HtDataRepository<T> {
         userId: userId,
       );
       return response.data;
-    } on HtHttpException {
+    } on HttpException {
       rethrow;
     } on FormatException {
       rethrow;
@@ -123,11 +123,11 @@ class HtDataRepository<T> {
   ///
   /// Returns `void` upon successful deletion.
   ///
-  /// Re-throws any [HtHttpException] (like [NotFoundException]) from the client.
+  /// Re-throws any [HttpException] (like [NotFoundException]) from the client.
   Future<void> delete({required String id, String? userId}) async {
     try {
       await _dataClient.delete(id: id, userId: userId);
-    } on HtHttpException {
+    } on HttpException {
       rethrow;
     }
   }
@@ -138,12 +138,12 @@ class HtDataRepository<T> {
   /// Unwraps the [SuccessApiResponse] from the client and returns the
   /// total count as an integer.
   ///
-  /// Re-throws any [HtHttpException] or [FormatException] from the client.
+  /// Re-throws any [HttpException] or [FormatException] from the client.
   Future<int> count({String? userId, Map<String, dynamic>? filter}) async {
     try {
       final response = await _dataClient.count(userId: userId, filter: filter);
       return response.data;
-    } on HtHttpException {
+    } on HttpException {
       rethrow;
     } on FormatException {
       rethrow;
@@ -156,7 +156,7 @@ class HtDataRepository<T> {
   /// Unwraps the [SuccessApiResponse] from the client and returns the
   /// resulting list of documents.
   ///
-  /// Re-throws any [HtHttpException] or [FormatException] from the client.
+  /// Re-throws any [HttpException] or [FormatException] from the client.
   Future<List<Map<String, dynamic>>> aggregate({
     required List<Map<String, dynamic>> pipeline,
     String? userId,
@@ -167,7 +167,7 @@ class HtDataRepository<T> {
         userId: userId,
       );
       return response.data;
-    } on HtHttpException {
+    } on HttpException {
       rethrow;
     } on FormatException {
       rethrow;

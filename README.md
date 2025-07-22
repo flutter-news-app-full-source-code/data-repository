@@ -1,10 +1,10 @@
-# ht_data_repository
+# data_repository
 
 ![coverage: percentage](https://img.shields.io/badge/coverage-100-green)
 [![style: very good analysis](https://img.shields.io/badge/style-very_good_analysis-B22C89.svg)](https://pub.dev/packages/very_good_analysis)
 [![License: PolyForm Free Trial](https://img.shields.io/badge/License-PolyForm%20Free%20Trial-blue)](https://polyformproject.org/licenses/free-trial/1.0.0)
 
-A generic repository that acts as an abstraction layer over an `HtDataClient`. It provides standard data access methods (CRUD, querying) for a specific data type `T`, delegating operations to the injected client.
+A generic repository that acts as an abstraction layer over an `DataClient`. It provides standard data access methods (CRUD, querying) for a specific data type `T`, delegating operations to the injected client.
 
 ## Getting Started
 
@@ -12,44 +12,44 @@ Add the dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ht_data_repository:
+  data_repository:
     git:
-      url: https://github.com/headlines-toolkit/ht-data-repository.git
+      url: https://github.com/flutter-news-app-full-source-code/data-repository.git
       # Optionally specify a ref (branch, tag, commit hash)
       # ref: main
 ```
 
-You will also need to include the `ht_data_client` package, which this repository depends on, and potentially `ht_http_client` if you need to handle its specific exceptions.
+You will also need to include the `data_client` package, which this repository depends on, and potentially `http_client` if you need to handle its specific exceptions.
 
 ```yaml
 dependencies:
-  ht_data_client:
+  data_client:
     git:
-      url: https://github.com/headlines-toolkit/ht-data-client.git
-  ht_http_client: # Needed for handling specific exceptions
+      url: https://github.com/flutter-news-app-full-source-code/data-client.git
+  http_client: # Needed for handling specific exceptions
     git:
-      url: https://github.com/headlines-toolkit/ht-http-client.git
+      url: https://github.com/flutter-news-app-full-source-code/http-client.git
 ```
 
 ## Features
 
-*   **Abstraction:** Provides a clean interface for data operations, hiding the underlying `HtDataClient` implementation details and the `SuccessApiResponse` envelope structure.
+*   **Abstraction:** Provides a clean interface for data operations, hiding the underlying `DataClient` implementation details and the `SuccessApiResponse` envelope structure.
 *   **User Scoping:** Supports optional user-scoped data operations via a `userId` parameter in all data access methods, allowing for both user-specific and global resource management.
 *   **CRUD Operations:** Supports standard Create, Read (`Future<T>`), Update (`Future<T>`), and Delete (`Future<void>`) operations for a generic type `T`. These methods now accept an optional `String? userId`.
 *   **Advanced Querying:** A single `readAll` method returns a `Future<PaginatedResponse<T>>` and supports rich filtering, multi-field sorting, and cursor-based pagination, aligning with modern NoSQL database capabilities.
-*   **Error Propagation:** Catches and re-throws exceptions (like `HtHttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
+*   **Error Propagation:** Catches and re-throws exceptions (like `HttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
 *   **Counting and Aggregation:** Exposes `count` for efficient document
     counting and `aggregate` for executing complex data pipelines.
-*   **Dependency Injection:** Designed to receive an `HtDataClient<T>` instance via its constructor.
+*   **Dependency Injection:** Designed to receive an `DataClient<T>` instance via its constructor.
 
 ## Usage
 
-Instantiate the repository by providing an implementation of `HtDataClient<T>`.
+Instantiate the repository by providing an implementation of `DataClient<T>`.
 
 ```dart
-import 'package:ht_data_client/ht_data_client.dart';
-import 'package:ht_data_repository/ht_data_repository.dart';
-import 'package:ht_shared/ht_shared.dart'; // For exception handling
+import 'package:data_client/data_client.dart';
+import 'package:data_repository/data_repository.dart';
+import 'package:core/core.dart'; // For exception handling
 
 // Define your data model
 class MyData {
@@ -61,12 +61,12 @@ class MyData {
   // Add fromJson/toJson if needed by your client implementation
 }
 
-// Assume you have an implementation of HtDataClient<MyData>
-// (e.g., HtHttpDataClient, MockDataClient, etc.)
-late HtDataClient<MyData> myDataClient; // Initialize this appropriately
+// Assume you have an implementation of DataClient<MyData>
+// (e.g., HttpDataClient, MockDataClient, etc.)
+late DataClient<MyData> myDataClient; // Initialize this appropriately
 
 // Create the repository instance
-final myDataRepository = HtDataRepository<MyData>(dataClient: myDataClient);
+final myDataRepository = DataRepository<MyData>(dataClient: myDataClient);
 
 // Use the repository methods
 Future<void> exampleUsage() async {
@@ -133,9 +133,9 @@ Future<void> exampleUsage() async {
     print('Read ${globalItemsResponse.items.length} global items.');
 
 
-  } on HtHttpException catch (e) {
+  } on HttpException catch (e) {
     // Handle specific HTTP errors from the client
-    // Note: HtHttpException subtypes from ht_shared do not have statusCode
+    // Note: HttpException subtypes from core do not have statusCode
     print('HTTP Error: ${e.message}');
     if (e is NotFoundException) {
       print('Item not found.');
@@ -153,6 +153,9 @@ Future<void> exampleUsage() async {
 
 ```
 
-## License
 
-This package is licensed under the [PolyForm Free Trial](LICENSE). Please review the terms before use.
+## 🔑 Licensing
+
+This package is source-available and licensed under the [PolyForm Free Trial 1.0.0](LICENSE). Please review the terms before use.
+
+For commercial licensing options that grant the right to build and distribute unlimited applications, please visit the main [**Flutter News App - Full Source Code Toolkit**](https://github.com/flutter-news-app-full-source-code) organization.
