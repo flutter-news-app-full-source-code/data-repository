@@ -558,7 +558,7 @@ void main() {
     });
 
     group('entityUpdated stream', () {
-      test('emits an event when create is successful', () {
+      test('emits the entity Type when create is successful', () {
         // Arrange
         when(
           () => mockDataClient.create(
@@ -568,13 +568,13 @@ void main() {
         ).thenAnswer((_) async => mockSuccessResponseItem);
 
         // Assert
-        expect(repository.entityUpdated, emits(null));
+        expect(repository.entityUpdated, emits(_MockData));
 
         // Act
         repository.create(item: mockItem);
       });
 
-      test('emits an event when update is successful', () {
+      test('emits the entity Type when update is successful', () {
         // Arrange
         when(
           () => mockDataClient.update(
@@ -585,13 +585,13 @@ void main() {
         ).thenAnswer((_) async => mockSuccessResponseUpdatedItem);
 
         // Assert
-        expect(repository.entityUpdated, emits(null));
+        expect(repository.entityUpdated, emits(_MockData));
 
         // Act
         repository.update(id: mockId, item: mockItem);
       });
 
-      test('emits an event when delete is successful', () {
+      test('emits the entity Type when delete is successful', () {
         // Arrange
         when(
           () => mockDataClient.delete(
@@ -601,7 +601,7 @@ void main() {
         ).thenAnswer((_) async {});
 
         // Assert
-        expect(repository.entityUpdated, emits(null));
+        expect(repository.entityUpdated, emits(_MockData));
 
         // Act
         repository.delete(id: mockId);
@@ -617,7 +617,7 @@ void main() {
         ).thenThrow(mockHttpException);
 
         // Assert
-        expect(repository.entityUpdated, neverEmits(null));
+        expect(repository.entityUpdated, neverEmits(anything));
 
         // Act
         expect(
