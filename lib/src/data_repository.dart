@@ -32,14 +32,22 @@ class DataRepository<T> {
 
   final DataClient<T> _dataClient;
 
-  final _entityUpdatedController = StreamController<void>.broadcast();
+  final _entityUpdatedController = StreamController<Type>.broadcast();
 
-  /// A stream that emits an event when a data entity of type [T] is created,
+  /// A stream that emits the [Type] of a data entity when it is created,
   /// updated, or deleted.
   ///
-  /// This is useful for triggering UI refreshes or other side effects in
-  /// response to data modifications.
-  Stream<void> get entityUpdated => _entityUpdatedController.stream;
+  /// This is useful for allowing different parts of the application to listen
+  /// for changes to specific data types and trigger UI refreshes or other
+  /// side effects accordingly.
+  ///
+  /// Example:
+  /// ```dart
+  /// repository.entityUpdated.where((type) => type == Headline).listen((_) {
+  ///   print('A headline was changed! Refreshing headline list.');
+  /// });
+  /// ```
+  Stream<Type> get entityUpdated => _entityUpdatedController.stream;
 
   /// Closes the underlying stream controller.
   ///
@@ -58,7 +66,7 @@ class DataRepository<T> {
   Future<T> create({required T item, String? userId}) async {
     try {
       final response = await _dataClient.create(item: item, userId: userId);
-      _entityUpdatedController.add(null);
+      _entityUpdatedController.add(T);
       return response.data;
     } on HttpException {
       rethrow; // Propagate client-level HTTP exceptions
@@ -134,7 +142,7 @@ class DataRepository<T> {
         item: item,
         userId: userId,
       );
-      _entityUpdatedController.add(null);
+      _entityUpdatedController.add(T);
       return response.data;
     } on HttpException {
       rethrow;
@@ -151,7 +159,7 @@ class DataRepository<T> {
   Future<void> delete({required String id, String? userId}) async {
     try {
       await _dataClient.delete(id: id, userId: userId);
-      _entityUpdatedController.add(null);
+      _entityUpdatedController.add(T);
     } on HttpException {
       rethrow;
     }
