@@ -104,6 +104,10 @@ void main() {
       repository = DataRepository<_MockData>(dataClient: mockDataClient);
     });
 
+    tearDown(() {
+      repository.dispose();
+    });
+
     // --- Test Cases ---
 
     group('create', () {
@@ -551,6 +555,86 @@ void main() {
           );
         },
       );
+    });
+
+    group('entityUpdated stream', () {
+      test('emits an event when create is successful', () {
+        // Arrange
+        when(
+          () => mockDataClient.create(
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => mockSuccessResponseItem);
+
+        // Assert
+        expect(repository.entityUpdated, emits(null));
+
+        // Act
+        repository.create(item: mockItem);
+      });
+
+      test('emits an event when update is successful', () {
+        // Arrange
+        when(
+          () => mockDataClient.update(
+            id: any(named: 'id'),
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => mockSuccessResponseUpdatedItem);
+
+        // Assert
+        expect(repository.entityUpdated, emits(null));
+
+        // Act
+        repository.update(id: mockId, item: mockItem);
+      });
+
+      test('emits an event when delete is successful', () {
+        // Arrange
+        when(
+          () => mockDataClient.delete(
+            id: any(named: 'id'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async {});
+
+        // Assert
+        expect(repository.entityUpdated, emits(null));
+
+        // Act
+        repository.delete(id: mockId);
+      });
+
+      test('does not emit an event when create fails', () {
+        // Arrange
+        when(
+          () => mockDataClient.create(
+            item: any(named: 'item'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(mockHttpException);
+
+        // Assert
+        expect(repository.entityUpdated, neverEmits(null));
+
+        // Act
+        expect(
+          () => repository.create(item: mockItem),
+          throwsA(isA<HttpException>()),
+        );
+      });
+    });
+
+    group('dispose', () {
+      test('closes the entityUpdated stream', () {
+        // Act
+        repository.dispose();
+
+        // Assert
+        expect(repository.entityUpdated, emitsDone);
+      });
     });
   });
 }
