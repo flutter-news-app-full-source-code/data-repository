@@ -1,5 +1,6 @@
-//
 // ignore_for_file: lines_longer_than_80_chars
+
+import 'dart:async';
 
 import 'package:core/core.dart';
 import 'package:data_client/data_client.dart';
@@ -19,13 +20,34 @@ import 'package:data_client/data_client.dart';
 /// potentially [FormatException] during deserialization) and re-throws them.
 /// This allows higher layers (like BLoCs or API route handlers) to implement
 /// specific error handling logic based on the exception type.
+///
+/// It also provides a stream, [entityUpdated], that emits an event whenever
+/// a CUD (Create, Update, Delete) operation is successfully completed,
+/// allowing other parts of the application to react to data changes.
 /// {@endtemplate}
 class DataRepository<T> {
   /// {@macro data_repository}
-  const DataRepository({required DataClient<T> dataClient})
-    : _dataClient = dataClient;
+  DataRepository({required DataClient<T> dataClient})
+      : _dataClient = dataClient;
 
   final DataClient<T> _dataClient;
+
+  final _entityUpdatedController = StreamController<void>.broadcast();
+
+  /// A stream that emits an event when a data entity of type [T] is created,
+  /// updated, or deleted.
+  ///
+  /// This is useful for triggering UI refreshes or other side effects in
+  /// response to data modifications.
+  Stream<void> get entityUpdated => _entityUpdatedController.stream;
+
+  /// Closes the underlying stream controller.
+  ///
+  /// This should be called when the repository is no longer needed to prevent
+  /// memory leaks.
+  void dispose() {
+    _entityUpdatedController.close();
+  }
 
   /// Creates a new resource item of type [T] by delegating to the client.
   ///
@@ -36,6 +58,7 @@ class DataRepository<T> {
   Future<T> create({required T item, String? userId}) async {
     try {
       final response = await _dataClient.create(item: item, userId: userId);
+      _entityUpdatedController.add(null);
       return response.data;
     } on HttpException {
       rethrow; // Propagate client-level HTTP exceptions
@@ -111,6 +134,7 @@ class DataRepository<T> {
         item: item,
         userId: userId,
       );
+      _entityUpdatedController.add(null);
       return response.data;
     } on HttpException {
       rethrow;
@@ -127,6 +151,7 @@ class DataRepository<T> {
   Future<void> delete({required String id, String? userId}) async {
     try {
       await _dataClient.delete(id: id, userId: userId);
+      _entityUpdatedController.add(null);
     } on HttpException {
       rethrow;
     }
