@@ -40,10 +40,10 @@ dependencies:
 *   **Error Propagation:** Catches and re-throws exceptions (like `HttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
 *   **Counting and Aggregation:** Exposes `count` for efficient document
     counting and `aggregate` for executing complex data pipelines.
-*   **Reactive Updates:** Provides a stream, `entityUpdated`, that emits an
-    event whenever a CUD (Create, Update, Delete) operation is successfully
-    completed. This allows different parts of an application to react to data
-    changes in real-time.
+*   **Reactive Updates:** Provides a stream, `entityUpdated`, that emits the
+    `Type` of the modified entity whenever a CUD (Create, Update, Delete)
+    operation is successfully completed. This allows different parts of an
+    application to react to data changes for specific types in real-time.
 *   **Dependency Injection:** Designed to receive an `DataClient<T>` instance via its constructor.
 
 ## Usage
@@ -136,9 +136,11 @@ Future<void> exampleUsage() async {
         await myDataRepository.readAll(pagination: PaginationOptions(limit: 5));
     print('Read ${globalItemsResponse.items.length} global items.');
 
-    // Listen for data changes
-    final subscription = myDataRepository.entityUpdated.listen((_) {
-      print('A data entity was created, updated, or deleted. Refreshing UI...');
+    // Listen for data changes for a specific type
+    final subscription = myDataRepository.entityUpdated
+        .where((type) => type == MyData)
+        .listen((_) {
+      print('A MyData entity was created, updated, or deleted. Refreshing UI...');
       // Trigger a refresh of the data or UI components
     });
 
