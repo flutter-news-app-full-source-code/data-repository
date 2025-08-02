@@ -1,4 +1,3 @@
-//
 // ignore_for_file: lines_longer_than_80_chars, avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:core/core.dart';
@@ -607,7 +606,12 @@ void main() {
         repository.delete(id: mockId);
       });
 
-      test('does not emit an event when create fails', () {
+      test('does not emit an event when create fails', () async {
+        // This test requires its own repository instance to control the
+        // stream lifecycle and prevent a timeout with neverEmits.
+        final localRepository = DataRepository<_MockData>(
+          dataClient: mockDataClient,
+        );
         // Arrange
         when(
           () => mockDataClient.create(
@@ -617,13 +621,17 @@ void main() {
         ).thenThrow(mockHttpException);
 
         // Assert
-        expect(repository.entityUpdated, neverEmits(anything));
+        expect(localRepository.entityUpdated, neverEmits(anything));
 
-        // Act
-        expect(
-          () => repository.create(item: mockItem),
+        // Act & Assert
+        // Use `expectLater` to test a Future that completes with an error.
+        await expectLater(
+          localRepository.create(item: mockItem),
           throwsA(isA<HttpException>()),
         );
+
+        // Clean up the local stream controller to allow the test to complete.
+        localRepository.dispose();
       });
     });
 

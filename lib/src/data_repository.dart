@@ -28,7 +28,7 @@ import 'package:data_client/data_client.dart';
 class DataRepository<T> {
   /// {@macro data_repository}
   DataRepository({required DataClient<T> dataClient})
-      : _dataClient = dataClient;
+    : _dataClient = dataClient;
 
   final DataClient<T> _dataClient;
 
