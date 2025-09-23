@@ -14,7 +14,7 @@ dependencies:
   data_client:
     git:
       url: https://github.com/flutter-news-app-full-source-code/data-client.git
-      ref: de1b23d1ce85bac1b12fd84667d9def043531abc
+      ref: 960a00882045ee252274d9d57bfca606c1fe5d64
 
 dev_dependencies:
   mocktail: ^1.0.4
