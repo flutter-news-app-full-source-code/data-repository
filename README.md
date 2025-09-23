@@ -1,181 +1,47 @@
-# data_repository
+<div align="center">
+  <img src="https://avatars.githubusercontent.com/u/202675624?s=400&u=dc72a2b53e8158956a3b672f8e52e39394b6b610&v=4" alt="Flutter News App Toolkit Logo" width="220">
+  <h1>Data Repository</h1>
+  <p><strong>A generic repository that serves as a crucial abstraction layer within the FLutter News App Full Source Code Toolkit.</strong></p>
+</div>
 
-![coverage: percentage](https://img.shields.io/badge/coverage-100-green)
-[![style: very good analysis](https://img.shields.io/badge/style-very_good_analysis-B22C89.svg)](https://pub.dev/packages/very_good_analysis)
-[![License: PolyForm Free Trial](https://img.shields.io/badge/License-PolyForm%20Free%20Trial-blue)](https://polyformproject.org/licenses/free-trial/1.0.0)
+<p align="center">
+  <img src="https://img.shields.io/badge/coverage-100%25-green?style=for-the-badge" alt="coverage: 100%">
+  <a href="https://flutter-news-app-full-source-code.github.io/docs/"><img src="https://img.shields.io/badge/LIVE_DOCS-VIEW-slategray?style=for-the-badge" alt="Live Docs: View"></a>
+  <a href="https://github.com/flutter-news-app-full-source-code"><img src="https://img.shields.io/badge/MAIN_PROJECT-BROWSE-purple?style=for-the-badge" alt="Main Project: Browse"></a>
+</p>
 
-A generic repository that acts as an abstraction layer over an `DataClient`. It provides standard data access methods (CRUD, querying) for a specific data type `T`, delegating operations to the injected client.
+This `data_repository` package serves as a crucial abstraction layer within the [**Flutter News App Full Source Code Toolkit**](https://github.com/flutter-news-app-full-source-code). It provides a generic, type-safe interface for interacting with data sources, decoupling business logic from the underlying data client implementations. By mirroring the data access methods of a `DataClient`, it ensures consistency and simplifies data operations across the Flutter mobile app, web dashboard, and Dart Frog backend API.
 
-## Getting Started
+## ⭐ Feature Showcase: Robust Data Access & Management
 
-Add the dependency to your `pubspec.yaml`:
+This package offers a comprehensive set of features for managing data entities.
 
-```yaml
-dependencies:
-  data_repository:
-    git:
-      url: https://github.com/flutter-news-app-full-source-code/data-repository.git
-      # Optionally specify a ref (branch, tag, commit hash)
-      # ref: main
-```
+<details>
+<summary><strong>🧱 Core Functionality</strong></summary>
 
-You will also need to include the `data_client` package, which this repository depends on, and potentially `http_client` if you need to handle its specific exceptions.
+### 🚀 Generic Data Operations
+- **`DataRepository<T>`:** A generic class that provides a consistent interface for CRUD (Create, Read, Update, Delete) operations, querying, counting, and aggregation for any data type `T`.
+- **Abstraction over `DataClient`:** Hides the complexities of `DataClient` implementations and `SuccessApiResponse` structures, offering a clean, business-logic-focused API.
 
-```yaml
-dependencies:
-  data_client:
-    git:
-      url: https://github.com/flutter-news-app-full-source-code/data-client.git
-  http_client: # Needed for handling specific exceptions
-    git:
-      url: https://github.com/flutter-news-app-full-source-code/http-client.git
-```
+### 🔐 User Scoping & Permissions
+- **Optional `userId` Parameter:** All data access methods support an optional `userId` parameter, enabling seamless management of both user-specific and global resources.
 
-## Features
+### 🔍 Advanced Querying
+- **`readAll` Method:** A powerful method that returns a `Future<PaginatedResponse<T>>`, supporting rich filtering, multi-field sorting, and cursor-based pagination, compatible with modern NoSQL database capabilities.
+- **`count` and `aggregate`:** Efficient methods for counting documents and executing complex data aggregation pipelines directly on the data source.
 
-*   **Abstraction:** Provides a clean interface for data operations, hiding the underlying `DataClient` implementation details and the `SuccessApiResponse` envelope structure.
-*   **User Scoping:** Supports optional user-scoped data operations via a `userId` parameter in all data access methods, allowing for both user-specific and global resource management.
-*   **CRUD Operations:** Supports standard Create, Read (`Future<T>`), Update (`Future<T>`), and Delete (`Future<void>`) operations for a generic type `T`. These methods now accept an optional `String? userId`.
-*   **Advanced Querying:** A single `readAll` method returns a `Future<PaginatedResponse<T>>` and supports rich filtering, multi-field sorting, and cursor-based pagination, aligning with modern NoSQL database capabilities.
-*   **Error Propagation:** Catches and re-throws exceptions (like `HttpException` subtypes or `FormatException`) from the data client layer, allowing higher layers to handle them appropriately.
-*   **Counting and Aggregation:** Exposes `count` for efficient document
-    counting and `aggregate` for executing complex data pipelines.
-*   **Reactive Updates:** Provides a stream, `entityUpdated`, that emits the
-    `Type` of the modified entity whenever a CUD (Create, Update, Delete)
-    operation is successfully completed. This allows different parts of an
-    application to react to data changes for specific types in real-time.
-*   **Dependency Injection:** Designed to receive an `DataClient<T>` instance via its constructor.
+### 🔄 Reactive Updates
+- **`entityUpdated` Stream:** A broadcast stream that emits the `Type` of a data entity whenever a Create, Update, or Delete operation is successfully completed. This allows other parts of the application to react to data changes in real-time, facilitating dynamic UI updates and side effects.
 
-## Usage
+### 🛡️ Robust Error Handling
+- **Exception Propagation:** Catches and re-throws standardized exceptions (like `HttpException` subtypes or `FormatException`) from the underlying data client layer. This ensures predictable error handling and allows higher layers (e.g., BLoCs, API route handlers) to implement specific error recovery logic.
 
-Instantiate the repository by providing an implementation of `DataClient<T>`.
+### 💉 Dependency Injection Ready
+- **Constructor Injection:** Designed to receive an `DataClient<T>` instance via its constructor, promoting loose coupling and testability.
 
-```dart
-import 'package:data_client/data_client.dart';
-import 'package:data_repository/data_repository.dart';
-import 'package:core/core.dart'; // For exception handling
+> **💡 Your Advantage:** You get a meticulously designed, production-quality data access layer that simplifies interactions with your data sources, ensures consistency, and provides robust error handling and reactive capabilities. This package accelerates development by providing a solid foundation for data management.
 
-// Define your data model
-class MyData {
-  final String id;
-  final String name;
-
-  MyData({required this.id, required this.name});
-
-  // Add fromJson/toJson if needed by your client implementation
-}
-
-// Assume you have an implementation of DataClient<MyData>
-// (e.g., HttpDataClient, MockDataClient, etc.)
-late DataClient<MyData> myDataClient; // Initialize this appropriately
-
-// Create the repository instance
-final myDataRepository = DataRepository<MyData>(dataClient: myDataClient);
-
-// Use the repository methods
-Future<void> exampleUsage() async {
-  const userId = 'example-user-id'; // Example user ID
-
-  try {
-    // Create an item for a specific user
-    final newItem = MyData(id: 'temp', name: 'New Item');
-    final createdItem = await myDataRepository.create(item: newItem, userId: userId);
-    print('Created: ${createdItem.id}, ${createdItem.name} for user $userId');
-
-    // Read an item for a specific user
-    final readItem = await myDataRepository.read(id: createdItem.id, userId: userId);
-    print('Read: ${readItem.id}, ${readItem.name} for user $userId');
-
-    // Read all items for a user with pagination
-    final allItemsResponse = await myDataRepository.readAll(
-      userId: userId,
-      pagination: PaginationOptions(limit: 10),
-    );
-    print('Read ${allItemsResponse.items.length} items for user $userId.');
-    if (allItemsResponse.nextCursor != null) {
-      print('More items available (nextCursor: ${allItemsResponse.nextCursor})');
-    }
-
-    // Query items for a user with filtering and sorting
-    final filter = {'status': 'published'};
-    final sort = [SortOption('publishDate', SortOrder.desc)];
-    final queriedItemsResponse = await myDataRepository.readAll(
-      userId: userId,
-      filter: filter,
-      sort: sort,
-    );
-    print('Found ${queriedItemsResponse.items.length} items matching filter for user $userId.');
-
-    // Count items for a user
-    final count = await myDataRepository.count(
-      userId: userId,
-      filter: {'status': 'published'},
-    );
-    print('User has $count published items.');
-
-    // Aggregate data for a user
-    final pipeline = [
-      {
-        r'$group': {'_id': r'$category', 'total': {r'$sum': 1}},
-      },
-      {
-        r'$sort': {'total': -1},
-      },
-    ];
-    final aggregateResult =
-        await myDataRepository.aggregate(pipeline: pipeline, userId: userId);
-    print('Aggregation result: $aggregateResult');
-
-    // Update an item for a specific user
-    final updatedItemData = MyData(id: createdItem.id, name: 'Updated Name');
-    final updatedItem = await myDataRepository.update(id: createdItem.id, item: updatedItemData, userId: userId);
-    print('Updated: ${updatedItem.id}, ${updatedItem.name} for user $userId');
-
-    // Example of a global read (without userId)
-     final PaginatedResponse<MyData> globalItemsResponse =
-        await myDataRepository.readAll(pagination: PaginationOptions(limit: 5));
-    print('Read ${globalItemsResponse.items.length} global items.');
-
-    // Listen for data changes for a specific type
-    final subscription = myDataRepository.entityUpdated
-        .where((type) => type == MyData)
-        .listen((_) {
-      print('A MyData entity was created, updated, or deleted. Refreshing UI...');
-      // Trigger a refresh of the data or UI components
-    });
-
-    // ... perform more operations ...
-
-    // Don't forget to cancel the subscription when done
-    await subscription.cancel();
-
-    // And dispose the repository when it's no longer needed
-    myDataRepository.dispose();
-
-
-  } on HttpException catch (e) {
-    // Handle specific HTTP errors from the client
-    // Note: HttpException subtypes from core do not have statusCode
-    print('HTTP Error: ${e.message}');
-    if (e is NotFoundException) {
-      print('Item not found.');
-    } else if (e is ForbiddenException) {
-      print('Permission denied for this operation.');
-    }
-  } on FormatException catch (e) {
-    // Handle data format errors during deserialization
-    print('Data Format Error: $e');
-  } catch (e) {
-    // Handle other unexpected errors
-    print('An unexpected error occurred: $e');
-  }
-}
-
-```
-
+</details>
 
 ## 🔑 Licensing
-
-This package is source-available and licensed under the [PolyForm Free Trial 1.0.0](LICENSE). Please review the terms before use.
-
-For commercial licensing options that grant the right to build and distribute unlimited applications, please visit the main [**Flutter News App - Full Source Code Toolkit**](https://github.com/flutter-news-app-full-source-code) organization.
+This `data_repository` package is an integral part of the [**Flutter News App Full Source Code Toolkit**](https://github.com/flutter-news-app-full-source-code). For comprehensive details regarding licensing, including trial and commercial options for the entire toolkit, please refer to the main toolkit organization page.
