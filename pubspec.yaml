@@ -2,6 +2,7 @@ name: data_repository
 description: A generic repository that acts as an abstraction layer over an DataClient.
 repository: https://github.com/flutter-news-app-full-source-code/data-repository
 publish_to: none
+version: 1.0.1
 
 environment:
   sdk: ^3.8.0
@@ -10,11 +11,11 @@ dependencies:
   core:
     git:
       url: https://github.com/flutter-news-app-full-source-code/core.git
-      ref: v1.2.0
+      ref: v1.3.1
   data_client:
     git:
       url: https://github.com/flutter-news-app-full-source-code/data-client.git
-      ref: v1.0.0
+      ref: v1.0.1
 
 dev_dependencies:
   mocktail: ^1.0.4
